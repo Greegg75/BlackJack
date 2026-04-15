@@ -3,19 +3,24 @@ use crate::engine::cards::Card;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum GameMessage {
-    // Demande de jetons quand on est à sec (Le "Refill")
+    // Annonce sa présence dans le lobby
+    JoinLobby { player_id: String },
+
+    // Synchronise sa main avec les autres joueurs
+    SyncHand { player_id: String, cards: Vec<Card>, score: u8 },
+
+    // Demande de jetons quand on est à sec
     RequestFunds { amount: u32, player_id: String },
-    
-    // Envoi des cartes (pour le multi)
+
+    // Distribution des cartes (hôte → joueurs)
     DistributeCards { dealer_cards: Vec<Card>, players_cards: Vec<(String, Vec<Card>)> },
-    
+
     // Action d'un joueur distant
     PlayerAction { player_id: String, action: String },
-    
-    // Message système (ex: "Grego a rejoint la table")
+
+    // Message système
     System(String),
-    // On envoie son ID et sa liste de cartes pour que les autres l'affichent
-    SyncHand { player_id: String, cards: Vec<Card>, score: u8 },
-    // Optionnel : Pour envoyer un message dans un futur chat
+
+    // Ping / chat futur
     Ping(String),
 }

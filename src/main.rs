@@ -110,22 +110,32 @@ impl BlackjackApp {
 
     fn resolve_winner(&mut self) {
         let d_score = self.dealer_hand.score();
-        let mut total_gain = 0;
+        let mut total_gain: u32 = 0;
+        let mut any_bust = false;
 
         for hand in &self.player_hands {
             let p_score = hand.score();
-            if p_score <= 21 && (d_score > 21 || p_score > d_score) {
+            if p_score > 21 {
+                any_bust = true;
+                // Mise perdue, rien à rembourser
+            } else if d_score > 21 || p_score > d_score {
+                // Victoire : on récupère la mise × 2
                 total_gain += hand.bet * 2;
-            } else if p_score <= 21 && p_score == d_score {
+            } else if p_score == d_score {
+                // Égalité : on récupère juste la mise
                 total_gain += hand.bet;
             }
+            // Défaite : rien
         }
 
         if total_gain > 0 {
+            let net = total_gain - self.player_hands.iter().map(|h| h.bet).sum::<u32>();
             self.wallet.add_funds(total_gain);
-            self.status = format!("GAGNÉ ! +{}€", total_gain);
+            self.status = format!("✅ GAGNÉ ! +{} €", net);
+        } else if any_bust {
+            self.status = "💥 BUST ! BANQUE GAGNE".to_string();
         } else {
-            self.status = "BANQUE GAGNE".to_string();
+            self.status = "❌ BANQUE GAGNE".to_string();
         }
         
         self.current_bet = 0;
@@ -178,13 +188,8 @@ impl eframe::App for BlackjackApp {
                         if self.is_multiplayer { self.setup_network(); }
                     }
                     ui.label(egui::RichText::new(format!("ID: {}", self.my_id)).weak());
-                    
-                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                        ui.selectable_value(&mut self.theme, ThemeMode::Auto, "🌓");
-                        ui.selectable_value(&mut self.theme, ThemeMode::Dark, "🌙");
-                        ui.selectable_value(&mut self.theme, ThemeMode::Light, "☀️");
-                    });
-                    // NOUVEAU : Indicateur de connexion
+
+                    // Indicateur de connexion
                     if self.is_multiplayer {
                         if peer_count > 0 {
                             ui.label(egui::RichText::new(format!("🟢 {} JOUEUR(S) AVEC VOUS", peer_count))
@@ -245,9 +250,22 @@ impl eframe::App for BlackjackApp {
 
                 ui.add_space(30.0);
 
+                // --- MISE EN COURS ---
+                if !self.in_game {
+                    if self.current_bet > 0 {
+                        ui.label(egui::RichText::new(format!("MISE : {} €", self.current_bet))
+                            .size(18.0)
+                            .color(egui::Color32::from_rgb(255, 159, 10))
+                            .strong());
+                    } else {
+                        ui.label(egui::RichText::new("MISE : 0 €").size(18.0).weak());
+                    }
+                    ui.add_space(8.0);
+                }
+
                 // --- ACTIONS ---
                 ui.horizontal(|ui| {
-                    let total_w = 600.0;
+                    let total_w = 650.0;
                     ui.add_space((ui.available_width() - total_w) / 2.0);
 
                     if !self.in_game {
@@ -257,22 +275,36 @@ impl eframe::App for BlackjackApp {
                             }
                         }
                         if ui.add(apple_btn("ALL IN", is_dark).fill(egui::Color32::from_rgb(255, 59, 48))).clicked() {
-                            let b = self.wallet.balance(); let _ = self.wallet.remove_funds(b); self.current_bet += b;
+                            let b = self.wallet.balance();
+                            let _ = self.wallet.remove_funds(b);
+                            self.current_bet += b;
+                        }
+                        // Bouton annuler la mise
+                        if self.current_bet > 0 {
+                            if ui.add(apple_btn("✕ ANNULER", is_dark)).clicked() {
+                                self.wallet.add_funds(self.current_bet);
+                                self.current_bet = 0;
+                                self.status = "MISE ANNULÉE".to_string();
+                            }
                         }
                         ui.add_space(15.0);
-                        if ui.add(egui::Button::new(egui::RichText::new("PLAY").strong()).fill(egui::Color32::from_rgb(48, 209, 88)).min_size(egui::vec2(100.0, 45.0))).clicked() && self.current_bet > 0 {
+                        if ui.add(egui::Button::new(egui::RichText::new("▶ PLAY").strong())
+                            .fill(egui::Color32::from_rgb(48, 209, 88))
+                            .min_size(egui::vec2(100.0, 45.0))).clicked() && self.current_bet > 0 {
                             self.start_hand();
                         }
                     } else {
                         if ui.add(apple_btn("HIT", is_dark)).clicked() {
                             if let Some(c) = self.deck.draw() { 
                                 self.player_hands[0].add_card(c); 
-                                self.broadcast_my_hand(); // On prévient les autres qu'on a tiré
+                                self.broadcast_my_hand();
                                 if self.player_hands[0].score() > 21 { self.resolve_winner(); } 
                             }
                         }
                         if ui.add(apple_btn("STAND", is_dark)).clicked() {
-                            while self.dealer_hand.score() < 17 { if let Some(c) = self.deck.draw() { self.dealer_hand.add_card(c); } else { break; } }
+                            while self.dealer_hand.score() < 17 {
+                                if let Some(c) = self.deck.draw() { self.dealer_hand.add_card(c); } else { break; }
+                            }
                             self.resolve_winner();
                         }
                     }

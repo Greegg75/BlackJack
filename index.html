@@ -5,8 +5,8 @@
     <title>Blackjack Rust - P2P Online</title>
     
 <script type="module">
-import init, * as bindings from '/BlackJack/blackjack_p2p-93f2d4e03da42d7e.js';
-const wasm = await init({ module_or_path: '/BlackJack/blackjack_p2p-93f2d4e03da42d7e_bg.wasm' });
+import init, * as bindings from '/BlackJack/blackjack_p2p-820a15607786001e.js';
+const wasm = await init({ module_or_path: '/BlackJack/blackjack_p2p-820a15607786001e_bg.wasm' });
 
 
 window.wasmBindings = bindings;
@@ -26,7 +26,7 @@ dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
             background-color: #121214; 
         }
     </style>
-<link rel="modulepreload" href="/BlackJack/blackjack_p2p-93f2d4e03da42d7e.js" crossorigin="anonymous" integrity="sha384-vPwBuu+itPokerdPaN9hvDsqCXt8knBq2d6vXc+B2nDcQy24CFnH7AA3oq+JssHL"><link rel="preload" href="/BlackJack/blackjack_p2p-93f2d4e03da42d7e_bg.wasm" crossorigin="anonymous" integrity="sha384-mNd3EGHMrZgGYiuOaGbvh08jjoN+n99CzyrwwFozh+NUVQzaBgPrW5f2wXOMyt3b" as="fetch" type="application/wasm"></head>
+<link rel="modulepreload" href="/BlackJack/blackjack_p2p-820a15607786001e.js" crossorigin="anonymous" integrity="sha384-TLtE8ThvwVrDWj/KKnDuh03jdSMt4S8ERnLMfNqNvBLC9gvbPjXZt24ZIB+xlpwq"><link rel="preload" href="/BlackJack/blackjack_p2p-820a15607786001e_bg.wasm" crossorigin="anonymous" integrity="sha384-caT1juVW1WH1II0oXuDE7B2oZH0iDx32LO7KMni5RK7TUBqR/WaOmAI6oKjJ2N77" as="fetch" type="application/wasm"></head>
 <body>
     <canvas id="the_canvas_id"></canvas>
 </body>

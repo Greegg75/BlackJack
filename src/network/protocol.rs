@@ -14,4 +14,8 @@ pub enum GameMessage {
     
     // Message système (ex: "Grego a rejoint la table")
     System(String),
+    // On envoie son ID et sa liste de cartes pour que les autres l'affichent
+    SyncHand { player_id: String, cards: Vec<Card>, score: u8 },
+    // Optionnel : Pour envoyer un message dans un futur chat
+    Ping(String),
 }

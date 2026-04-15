@@ -13,3 +13,4 @@ getrandom = { version = "0.2", features = ["js"] }
 wasm-bindgen-futures = "0.4"
 matchbox_socket = "0.7"
 futures-util = "0.3"
+uuid = { version = "1.8", features = ["v4", "js"] }

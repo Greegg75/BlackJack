@@ -16,7 +16,7 @@ jobs:
         run: wget -qO- https://github.com/trunk-rs/trunk/releases/latest/download/trunk-x86_64-unknown-linux-gnu.tar.gz | tar -xzf- && sudo mv trunk /usr/local/bin/
 
       - name: Build with Trunk
-        run: trunk build --release --public-url BlackJack
+        run: trunk build --release --public-url /BlackJack/
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4

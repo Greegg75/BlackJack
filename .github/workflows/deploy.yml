@@ -1,0 +1,25 @@
+name: Deploy Blackjack
+on:
+  push:
+    branches: [ main ] # Se déclenche quand tu pousses sur la branche main
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Rust
+        run: rustup target add wasm32-unknown-unknown
+
+      - name: Install Trunk
+        run: wget -qO- https://github.com/trunk-rs/trunk/releases/latest/download/trunk-x86_64-unknown-linux-gnu.tar.gz | tar -xzf- && sudo mv trunk /usr/local/bin/
+
+      - name: Build with Trunk
+        run: trunk build --release --public-url BlackJack
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: dist # Trunk génère le site dans le dossier dist
+          branch: gh-pages
